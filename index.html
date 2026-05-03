@@ -1,0 +1,289 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Quranic Algorithm Visual Proof</title>
+    <style>
+        :root {
+            --bg: #0f172a; --panel-bg: #1e293b; --text: #f8fafc;
+            --accent: #38bdf8; --accent-glow: rgba(56, 189, 248, 0.5);
+            --gold: #fbbf24; --green: #22c55e; --purple: #a855f7; --border: #334155;
+        }
+        body {
+            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+        #header {
+            padding: 15px 30px; background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 10; display: flex; justify-content: space-between; align-items: center;
+        }
+        .explainer-box {
+            background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent);
+            padding: 10px 20px; border-radius: 8px; max-width: 800px;
+        }
+        .explainer-box h3 { margin: 0 0 5px 0; color: var(--gold); }
+        .explainer-box p { margin: 0; font-size: 0.95rem; color: #cbd5e1; }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .panel { flex: 1; padding: 20px; overflow-y: auto; }
+        #left-panel { border-right: 1px solid var(--border); background: var(--panel-bg); }
+        #right-panel { background: var(--bg); scroll-behavior: smooth; }
+
+        /* Tree CSS */
+        .tree-node { margin-left: 30px; position: relative; border-left: 2px solid var(--border); padding-left: 20px; }
+        .tree-node::before { content: ''; position: absolute; left: -2px; top: 0; height: 100%; width: 2px; background: linear-gradient(var(--border), transparent); }
+        .tree-item {
+            padding: 8px 12px; margin: 8px 0;
+            background: rgba(255,255,255,0.02); border-radius: 8px;
+            display: inline-block; cursor: pointer; transition: 0.3s;
+            border: 1px solid transparent; min-width: 250px; position: relative;
+        }
+        .tree-item::before {
+            content: ''; position: absolute; top: 50%; left: -20px; width: 20px; height: 2px; background: var(--border);
+        }
+        .tree-item:hover { background: rgba(56, 189, 248, 0.05); border-color: var(--accent); transform: translateX(5px); }
+
+        /* Specific Level Styling */
+        .level-1 { border-color: rgba(34, 197, 94, 0.5); background: rgba(34, 197, 94, 0.05); }
+        .level-2 { border-color: rgba(251, 191, 36, 0.5); background: rgba(251, 191, 36, 0.05); }
+        .level-3 { border-color: rgba(168, 85, 247, 0.5); background: rgba(168, 85, 247, 0.05); }
+        .level-4-verse { border-color: var(--accent); background: rgba(56, 189, 248, 0.05); }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 10px; margin-bottom: 5px;}
+        .badge-major { background: var(--green); color: #000; }
+        .badge-sub { background: var(--gold); color: #000; }
+        .badge-group { background: var(--purple); color: #fff; }
+        .badge-verse { background: var(--accent); color: #000; }
+        .theme-hint { font-size: 0.8rem; color: #94a3b8; display: block; margin-top: 5px; font-style: italic; }
+
+        /* Verses CSS */
+        .verse-group {
+            margin-bottom: 40px; padding: 25px;
+            background: rgba(255,255,255,0.02); border-radius: 12px;
+            border-left: 4px solid var(--border); transition: 0.4s;
+        }
+        .verse-group.active {
+            background: rgba(168, 85, 247, 0.05);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.15);
+            border-left-color: var(--purple);
+            transform: scale(1.02);
+        }
+        .verse-group.active .theme-title { color: var(--purple); }
+        .theme-title { color: var(--accent); font-size: 1.2rem; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;}
+
+        .verse { margin-bottom: 15px; line-height: 1.8; font-size: 1.05rem; padding: 8px 12px; border-radius: 8px; border-left: 3px solid transparent; transition: all 0.3s; }
+        .verse.active-verse { background: rgba(56, 189, 248, 0.15); border-left-color: var(--accent); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+
+        .verse-number {
+            display: inline-block; width: 30px; height: 30px; line-height: 30px; text-align: center;
+            background: var(--accent); color: #000; border-radius: 50%; font-weight: bold; margin-right: 15px; font-size: 0.85em;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id='header'>
+        <div>
+            <h1 style='color:var(--gold); margin:0 0 5px 0;'>Muqatta'at Algorithm - Surah Qaf</h1>
+            <div style='color:#94a3b8; font-size:0.9rem;'>Surah Qaf Recursive Branching &nbsp;|&nbsp; Algorithm discovered by <strong style='color:var(--gold);'>Sabri Ben Rommane</strong> &nbsp;|&nbsp; <a href='https://www.youtube.com/watch?v=-8P-D_agsdc' target='_blank' style='color:var(--accent); text-decoration:none; font-weight:bold;'>&#x25B6; Watch Original Theory Video</a></div>
+        </div>
+    </div>
+
+    <div class='container'>
+        <div id='left-panel' class='panel'>
+            <div id='tree'></div>
+        </div>
+        <div id='right-panel' class='panel'>
+            <div id='verses'>Loading verses from Quran.com API...</div>
+            <div style='margin-top: 40px; padding: 20px; border-top: 1px solid var(--border); color: #94a3b8; font-size: 0.9rem; text-align: center;'>
+                <em>Note: This presentation uses a live API call to <strong>quran.com</strong> to fetch the accurate translation of Surah Qaf. The visual tree and the verse list are dynamically generated in real-time to help you understand the algorithm's mathematical mapping.</em>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rules = {
+            'Qaf': ['Qaf', 'Alif', 'Fa'], 'Alif': ['Alif', 'Lam', 'Fa'], 'Fa': ['Fa', 'Alif'],
+            'Lam': ['Lam', 'Alif', 'Mim'], 'Mim': ['Mim', 'Ya', 'Mim'], 'Ya': ['Ya', 'Alif']
+        };
+
+        const arabicMap = { 'Qaf': 'ق', 'Alif': 'ا', 'Fa': 'ف', 'Lam': 'ل', 'Mim': 'م', 'Ya': 'ي' };
+
+        const groupThemes = [
+            'Doubts about the Resurrection & the Messenger', 'Disbelievers squeezed between signs in Earth & Sky', 'The Earth as a sign for Believers',
+            'The Causal Chain of Life (Rain -> Vegetation -> Fruit)', 'Historical list of destroyed disbelieving peoples', 'Gods knowledge of human whispers',
+            'Two Angels recording deeds', 'Summary of the Death period until Resurrection', 'The Judgment Unveiled & Orders to Angels',
+            'Description of the Condemned Crimes', 'Excuses from the Devil (Qareen)', 'Hellfires Hunger and Paradises Promise',
+            'Description of the Righteous People', 'Destruction of past generations & Creation in 6 days', 'Devotional Instructions to the Prophet',
+            'The Caller, The Scream, Life and Death', 'The Final Gathering & Reminder via Quran'
+        ];
+
+        let level1Count = 1;
+        let level2Count = 1;
+        let level3Groups = [];
+        let globalVerseCounter = 1;
+
+        function buildTree(seed, maxLevel, currentLevel = 0, parentGroupIndex = -1) {
+            let node = { name: seed, level: currentLevel, children: [], groupIndex: -1, verseNumber: null, parentGroup: parentGroupIndex };
+
+            if (currentLevel === 1) {
+                node.majorSection = level1Count++;
+            }
+            if (currentLevel === 2) {
+                node.subsection = level2Count++;
+            }
+            if (currentLevel === 3) {
+                if (level3Groups.length < 17) {
+                    node.groupIndex = level3Groups.length;
+                    level3Groups.push(node);
+                    parentGroupIndex = node.groupIndex;
+                }
+            }
+            if (currentLevel === 4) {
+                if (globalVerseCounter <= 45) {
+                    node.verseNumber = globalVerseCounter++;
+                }
+            }
+
+            if (currentLevel < maxLevel && rules[seed]) {
+                rules[seed].forEach(childName => {
+                    node.children.push(buildTree(childName, maxLevel, currentLevel + 1, parentGroupIndex));
+                });
+            }
+            return node;
+        }
+
+        function hasVerse(node) {
+            if (node.verseNumber) return true;
+            return node.children.some(c => hasVerse(c));
+        }
+
+        function renderTree(node, container) {
+            if (!hasVerse(node)) return;
+
+            let item = document.createElement('div');
+            let classes = ['tree-item'];
+            if (node.level === 1) classes.push('level-1');
+            if (node.level === 2) classes.push('level-2');
+            if (node.level === 3 && node.groupIndex > -1) classes.push('level-3');
+            if (node.verseNumber) classes.push('level-4-verse');
+            item.className = classes.join(' ');
+
+            let label = '<strong>' + node.name + '</strong> <span style="color:var(--accent)">(' + arabicMap[node.name] + ')</span>';
+
+            if (node.level === 0) {
+                label = '<span class="badge" style="background:#fff; color:#000;">Entire Surah (Verses 1-45)</span>' + label;
+            }
+            if (node.level === 1) {
+                label = '<span class="badge badge-major">Major Section ' + node.majorSection + '</span>' + label;
+            }
+            if (node.level === 2) {
+                label = '<span class="badge badge-sub">Subsection ' + node.subsection + '</span>' + label;
+            }
+            if (node.level === 3 && node.groupIndex > -1) {
+                label = '<span class="badge badge-group">Group ' + (node.groupIndex + 1) + '</span>' + label;
+                label += '<span class="theme-hint">Groups ' + node.children.length + ' verses: ' + groupThemes[node.groupIndex] + '</span>';
+                item.onclick = (e) => { e.stopPropagation(); highlightGroup(node.groupIndex); };
+            }
+            if (node.verseNumber) {
+                label = '<span class="badge badge-verse">Verse ' + node.verseNumber + '</span>' + label;
+                item.onmouseenter = () => highlightGroup(node.parentGroup);
+                item.onclick = (e) => { e.stopPropagation(); highlightVerse(node.verseNumber, node.parentGroup); };
+            }
+
+            item.innerHTML = label;
+            container.appendChild(item);
+
+            if (node.children.length > 0) {
+                let childContainer = document.createElement('div');
+                childContainer.className = 'tree-node';
+                node.children.forEach(child => renderTree(child, childContainer));
+                container.appendChild(childContainer);
+            }
+        }
+
+        function highlightGroup(index) {
+            if (index === -1) return;
+            document.querySelectorAll('.verse-group').forEach(el => el.classList.remove('active'));
+            let target = document.getElementById('group-' + index);
+            if (target) {
+                target.classList.add('active');
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function highlightVerse(verseNum, groupIndex) {
+            highlightGroup(groupIndex); // Ensure parent group is active
+
+            // Remove previous verse highlights
+            document.querySelectorAll('.verse').forEach(el => el.classList.remove('active-verse'));
+
+            // Highlight specific verse
+            let targetVerse = document.getElementById('verse-' + verseNum);
+            if (targetVerse) {
+                targetVerse.classList.add('active-verse');
+                setTimeout(() => {
+                    targetVerse.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        }
+
+        async function init() {
+            const root = buildTree('Qaf', 4);
+            const treeContainer = document.getElementById('tree');
+            renderTree(root, treeContainer);
+
+            try {
+                const res = await fetch('https://api.alquran.cloud/v1/surah/50/en.asad');
+                const data = await res.json();
+                const ayahs = data.data.ayahs;
+
+                const versesContainer = document.getElementById('verses');
+                versesContainer.innerHTML = '';
+
+                let currentVerseIndex = 0;
+
+                level3Groups.forEach((groupNode, index) => {
+                    if (currentVerseIndex >= 45) return;
+
+                    let numVerses = groupNode.children.length;
+
+                    let groupDiv = document.createElement('div');
+                    groupDiv.className = 'verse-group';
+                    groupDiv.id = 'group-' + index;
+
+                    let title = document.createElement('h3');
+                    title.className = 'theme-title';
+                    title.innerHTML = 'Group ' + (index+1) + ': ' + (groupThemes[index] || '');
+                    groupDiv.appendChild(title);
+
+                    for (let i = 0; i < numVerses; i++) {
+                        if (currentVerseIndex >= 45) break;
+                        let ayah = ayahs[currentVerseIndex];
+                        let p = document.createElement('p');
+                        p.className = 'verse';
+                        p.id = 'verse-' + ayah.numberInSurah;
+                        p.innerHTML = '<span class="verse-number">' + ayah.numberInSurah + '</span> ' + ayah.text;
+                        groupDiv.appendChild(p);
+                        currentVerseIndex++;
+                    }
+                    versesContainer.appendChild(groupDiv);
+                });
+
+            } catch (e) {
+                document.getElementById('verses').innerHTML = '<p style="color:red;">Failed to load verses from API.</p>';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
