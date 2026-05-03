@@ -42,6 +42,24 @@ Click any node in the left-hand tree to scroll to the corresponding section, gro
 - **Right panel** — Surah Qaf rendered with verses grouped by the algorithm's predicted boundaries
 - **Hover / click** — highlights the corresponding group or verse
 
+## What the HTML page actually does
+
+The page is a single self-contained HTML file (no build step, no backend). When opened in a browser:
+
+1. **Builds the tree in JavaScript.** Starting from the seed letter `Qaf`, a recursive function `buildTree()` applies the six phonetic-expansion rules above, four levels deep. Each node remembers its level, its parent group, and — at Level 4 — its assigned verse number (1–45).
+2. **Renders the left panel** by walking the tree and emitting nested `<div>` elements with badges for *Major Section*, *Subsection*, *Group*, and *Verse*. Group nodes are made clickable; verse nodes are made hoverable so they highlight their parent group on the right.
+3. **Fetches the Qur'an verses live from a public API.** On load, the page calls:
+
+   ```
+   GET https://api.alquran.cloud/v1/surah/50/en.asad
+   ```
+
+   This returns all 45 verses of Surah Qaf with the Muhammad Asad English translation. No API key is required — the call is made from the browser via `fetch()`.
+4. **Aligns the API response with the algorithm's groups.** The 45 returned verses are walked in order, and each Level-3 node from the tree consumes as many verses as it has Level-4 children. The result: the algorithm dictates the group boundaries, and the API supplies the actual verse text that lands inside each group.
+5. **Cross-links the two panels.** Clicking a Group node on the left scrolls and highlights the matching block of verses on the right; hovering a verse node on the left highlights its parent group; clicking it scrolls to the exact verse and pulses it.
+
+Because the rules, the mapping, and the API call are all visible in the page source, anyone can verify that nothing is hard-coded — the 45-verse alignment falls out of the recursion, not out of a lookup table.
+
 ## Credit
 
 The algorithm and the structural mapping it reveals are the discovery of **Sabri Ben Rommane**. This repository is an interactive visualization of his published theory.
